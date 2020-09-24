@@ -3,9 +3,33 @@ window.onload = pageLoad
 let player = {x: 1, y: 1}
 let monsters = []
 let walls = [
-  {x: 5, y: 1},
-  {x: 5, y: 2},
-  {x: 5, y: 3},
+  {x: 6, y: 1},
+  {x: 6, y: 2},
+  {x: 6, y: 3},
+  {x: 11, y: 3},
+  {x: 12, y: 3},
+  {x: 13, y: 3},
+  {x: 14, y: 3},
+  {x: 15, y: 3},
+  {x: 11, y: 4},
+  {x: 11, y: 5},
+  {x: 11, y: 6},
+  {x: 11, y: 7},
+  {x: 30, y: 3},
+  {x: 30, y: 4},
+  {x: 30, y: 5},
+  {x: 30, y: 6},
+  {x: 30, y: 7},
+  {x: 33, y: 3},
+  {x: 34, y: 3},
+  {x: 35, y: 3},
+  {x: 36, y: 3},
+  {x: 37, y: 3},
+  {x: 38, y: 3},
+  {x: 39, y: 3},
+  {x: 40, y: 3},
+  {x: 37, y: 2},
+  {x: 37, y: 1},
 ]
 
 function pageLoad() {
@@ -63,7 +87,7 @@ function createField() {
         continue;
       }
 
-      const isWallMatch = isWallMatchAndCreateWall(x, y, mapLayer)
+      const isWallMatch = isWallMatchAndTryCreateWall(x, y, mapLayer)
       if(isWallMatch) continue;
 
       mapLayer.push(' ')
@@ -72,21 +96,27 @@ function createField() {
     fieldTemplate.push(mapLayer)
   }
 
-  function isWallMatchAndCreateWall(currentX, currentY, mapLayer) {
-    let isWallMatch = false
-    walls.forEach(wall => {
-      const isCoordinatesMatch = isCoordinatesMatch(currentX, currentY, wall)
-      if(!isCoordinatesMatch) return;
-
-      mapLayer.push('█')
+  /**
+   * If the wall fits, add it to the map layer.
+   * @param {number} currentX - x at the moment of layer creation
+   * @param {number} currentY - y at the moment of layer creation
+   * @param {object} mapLayer - current map layer
+   */
+  function isWallMatchAndTryCreateWall(currentX, currentY, mapLayer) {
+    return walls.some((wall) => {
+      const isWallMatch = isCoordinatesMatch(currentX, currentY, wall)
+      if(isWallMatch) {
+        mapLayer.push('█')
+        return true
+      }
+      return false
     })
-
-    return isWallMatch
   }
 
   /**
-   * @param {number} currentX - y at the moment of layer creation
-   * @param {number} currentY - x at the moment of layer creation
+   * Match the layer coordinates to the checked texture.
+   * @param {number} currentX - x at the moment of layer creation
+   * @param {number} currentY - y at the moment of layer creation
    * @param {object} textureObject - texture object
    */
   function isCoordinatesMatch(currentX, currentY, {x: objectX, y: objectY}) {
