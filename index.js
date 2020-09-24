@@ -1,17 +1,77 @@
 window.onload = pageLoad
 
 let player = {x: 1, y: 1}
+let isDelay = false
 
 function pageLoad() {
   // Create a field and arrange objects.
-  createField()
+  createOrUpdateField()
 
   // Handling keystrokes.
   document.addEventListener('keydown', keyPressHandler)
 }
 
 function keyPressHandler({ key, code, keyCode }) {
+  /**
+   * I use return here instead of event.preventDefault() 
+   * because it's so convenient to receive arguments
+   */
+  if(isDelay) return;
   console.log(`key: ${key} code: ${code} ${keyCode}`)
+
+  switch (keyCode) {
+    // W
+    case 87:
+      movePlayer(0, -1)
+      break;    
+
+    // A
+    case 65: 
+      movePlayer(-1, 0)
+      break;
+    
+    // S
+    case 83: 
+      movePlayer(0, 1)
+      break;
+    
+    // D
+    case 68:
+      movePlayer(1, 0)
+      break;
+
+    // Space
+    case 32: 
+      addBomb()
+      break;
+    
+    default:
+      break;
+  }
+}
+
+async function movePlayer(x = 0, y = 0) {
+  player = {x: player.x + x, y: player.y + y}
+
+  createOrUpdateField()
+  artificialDelay()
+
+  console.log(player)
+}
+
+async function addBomb() {
+  artificialDelay()
+
+  console.log('bomb added')
+}
+
+// Creating an artificial delay
+function artificialDelay() {
+  isDelay = true
+  const delay = setTimeout(() => {
+    isDelay = false;
+    clearTimeout(delay)
+  }, 500);
 }
 
 /**
@@ -20,7 +80,7 @@ function keyPressHandler({ key, code, keyCode }) {
  * 
  * try to use class for creating bomb or wall or monster
  */
-function createField() {
+function createOrUpdateField() {
   let fieldTemplate = []
 
   // Height
