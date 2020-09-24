@@ -1,36 +1,6 @@
 window.onload = pageLoad
 
 let player = {x: 1, y: 1}
-let monsters = []
-let walls = [
-  {x: 6, y: 1},
-  {x: 6, y: 2},
-  {x: 6, y: 3},
-  {x: 11, y: 3},
-  {x: 12, y: 3},
-  {x: 13, y: 3},
-  {x: 14, y: 3},
-  {x: 15, y: 3},
-  {x: 11, y: 4},
-  {x: 11, y: 5},
-  {x: 11, y: 6},
-  {x: 11, y: 7},
-  {x: 30, y: 3},
-  {x: 30, y: 4},
-  {x: 30, y: 5},
-  {x: 30, y: 6},
-  {x: 30, y: 7},
-  {x: 33, y: 3},
-  {x: 34, y: 3},
-  {x: 35, y: 3},
-  {x: 36, y: 3},
-  {x: 37, y: 3},
-  {x: 38, y: 3},
-  {x: 39, y: 3},
-  {x: 40, y: 3},
-  {x: 37, y: 2},
-  {x: 37, y: 1},
-]
 
 function pageLoad() {
   // Create a field and arrange objects.
@@ -87,8 +57,11 @@ function createField() {
         continue;
       }
 
-      const isWallMatch = isWallMatchAndTryCreateWall(x, y, mapLayer)
+      const isWallMatch = isTextureMatchAndTryCreateTexture(x, y, mapLayer, walls)
       if(isWallMatch) continue;
+
+      const isCaseMatch = isTextureMatchAndTryCreateTexture(x, y, mapLayer, cases)
+      if(isCaseMatch) continue;
 
       mapLayer.push(' ')
     }
@@ -97,16 +70,16 @@ function createField() {
   }
 
   /**
-   * If the wall fits, add it to the map layer.
+   * If the texture fits, add it to the map layer.
    * @param {number} currentX - x at the moment of layer creation
    * @param {number} currentY - y at the moment of layer creation
    * @param {object} mapLayer - current map layer
    */
-  function isWallMatchAndTryCreateWall(currentX, currentY, mapLayer) {
-    return walls.some((wall) => {
-      const isWallMatch = isCoordinatesMatch(currentX, currentY, wall)
-      if(isWallMatch) {
-        mapLayer.push('█')
+  function isTextureMatchAndTryCreateTexture(currentX, currentY, mapLayer, {coordinates, texture}) {
+    return coordinates.some((coordinate) => {
+      const isTextureMatch = isCoordinatesMatch(currentX, currentY, coordinate)
+      if(isTextureMatch) {
+        mapLayer.push(texture)
         return true
       }
       return false
