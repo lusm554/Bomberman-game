@@ -44,3 +44,7 @@ let cases = {
     {x: 25, y: 6},
   ]
 }
+
+let bombTexture = {
+  texture: 'B ',
+}

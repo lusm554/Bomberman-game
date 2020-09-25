@@ -1,6 +1,7 @@
 window.onload = pageLoad
 
 let player = {x: 1, y: 1}
+const Bombs = new Set()
 let isDelay = false
 
 function pageLoad() {
@@ -17,8 +18,7 @@ function keyPressHandler({ key, code, keyCode }) {
    * because it's so convenient to receive arguments
    */
   if(isDelay) return;
-  console.log(`key: ${key} code: ${code} ${keyCode}`)
-
+  
   switch (keyCode) {
     // W
     case 87:
@@ -42,7 +42,7 @@ function keyPressHandler({ key, code, keyCode }) {
 
     // Space
     case 32: 
-      addBomb()
+      addBomb(player)
       break;
     
     default:
@@ -55,11 +55,19 @@ async function movePlayer(x = 0, y = 0) {
 
   createOrUpdateField()
   artificialDelay()
-
-  console.log(player)
 }
 
-async function addBomb() {
+/**
+ * Just put a bomb in the vault 
+ * and check it on every user's turn.
+ * @param {number} x - player x
+ * @param {number} y - player y
+ */
+async function addBomb({x, y}) {
+  const bomb = {numberOfTurns: 0, x, y}
+  Bombs.add(bomb)
+
+  createOrUpdateField()
   artificialDelay()
 
   console.log('bomb added')
@@ -117,6 +125,12 @@ function createOrUpdateField() {
         continue;
       }
 
+      const isBombHere = IsBombHereAndItExplodes(x, y, mapLayer, {
+        coordinates: Array.from(Bombs.values()),
+        texture: bombTexture.texture
+      })
+      if(isBombHere) continue;
+
       const isWallMatch = isTextureMatchAndTryCreateTexture(x, y, mapLayer, walls)
       if(isWallMatch) continue;
 
@@ -146,16 +160,6 @@ function createOrUpdateField() {
     })
   }
 
-  /**
-   * Match the layer coordinates to the checked texture.
-   * @param {number} currentX - x at the moment of layer creation
-   * @param {number} currentY - y at the moment of layer creation
-   * @param {object} textureObject - texture object
-   */
-  function isCoordinatesMatch(currentX, currentY, {x: objectX, y: objectY}) {
-    return (currentX === objectX) && (currentY === objectY)
-  }
-
   // Convert a matrix to a string
   let textField = fieldTemplate.reduce((template, currentLayer) => {
     let mapTextLayer = Array.isArray(currentLayer) ? 
@@ -165,4 +169,32 @@ function createOrUpdateField() {
   })
 
   document.getElementById('field').innerHTML = textField
+}
+
+/**
+ * Add bomb coordinate to the Bombs 
+ * On update field check: 
+ *  1. Is bomb explodes 
+ *  2. Is bomb on the current cage
+ */
+function IsBombHereAndItExplodes(currentX, currentY, mapLayer, {coordinates, texture}) {
+  if(coordinates.length === 0) return false;
+  let bomb = coordinates.find(({numberOfTurns, ...bombCoordinates}) => {
+    if(isCoordinatesMatch(currentX, currentY, bombCoordinates)) {
+      mapLayer.push(texture)
+      return true
+    }
+    return false
+  })
+  return bomb
+}
+
+/**
+ * Match the layer coordinates to the checked texture.
+ * @param {number} currentX - x at the moment of layer creation
+ * @param {number} currentY - y at the moment of layer creation
+ * @param {object} textureObject - texture object
+ */
+function isCoordinatesMatch(currentX, currentY, {x: objectX, y: objectY}) {
+  return (currentX === objectX) && (currentY === objectY)
 }
