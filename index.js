@@ -12,7 +12,7 @@ function pageLoad() {
   document.addEventListener('keydown', keyPressHandler)
 }
 
-function keyPressHandler({ key, code, keyCode }) {
+function keyPressHandler({keyCode}) {
   /**
    * I use return here instead of event.preventDefault() 
    * because it's so convenient to receive arguments
@@ -64,7 +64,7 @@ async function movePlayer(x = 0, y = 0) {
  * @param {number} y - player y
  */
 async function addBomb({x, y}) {
-  const bomb = {numberOfTurns: 0, x, y}
+  const bomb = {numberOfTurns: 0, x, y};
   Bombs.add(bomb)
 
   createOrUpdateField()
@@ -178,15 +178,42 @@ function createOrUpdateField() {
  *  2. Is bomb on the current cage
  */
 function IsBombHereAndItExplodes(currentX, currentY, mapLayer, {coordinates, texture}) {
+  // If bombs have not been added yet
   if(coordinates.length === 0) return false;
-  let bomb = coordinates.find(({numberOfTurns, ...bombCoordinates}) => {
+
+  const bomb = coordinates.find(({numberOfTurns, ...bombCoordinates}) => {
     if(isCoordinatesMatch(currentX, currentY, bombCoordinates)) {
       mapLayer.push(texture)
       return true
     }
     return false
   })
-  return bomb
+
+  /**
+   * I create a constant a to avoid confusion. If the current coordinate 
+   * does not match the bomb coordinate, 
+   * then the method find returns false, otherwise it returns the bomb object.
+   */
+  const isBombExist = !!bomb;
+
+  if(isBombExist) {
+    /**
+     * 5 because rendering happens on the next turn, 
+     * so it turns out after 6 player turns
+     */
+    if(bomb.numberOfTurns === 5) {
+      Bombs.delete(bomb)
+      return isBombExist
+    }
+
+    // Updating the value in the bomb object
+    Bombs.delete(bomb)
+    bomb.numberOfTurns+=1
+    Bombs.add(bomb)
+    console.log(bomb)
+  }
+
+  return isBombExist
 }
 
 /**
