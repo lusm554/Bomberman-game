@@ -84,10 +84,10 @@ function createOrUpdateField() {
   let fieldTemplate = []
 
   // Height
-  const n = 9
+  const n = 14
 
   // Width 
-  const m = 50
+  const m = 35
 
   for(let y = 0; y < n; y++) {
     /**
@@ -95,25 +95,25 @@ function createOrUpdateField() {
      * and go to a new iteration
      */
     if(y === 0 || y === n-1) {
-      fieldTemplate.push('█'.repeat(m))
+      fieldTemplate.push('█'.repeat(m*2))
       continue;
     }
 
     // Create a map layer
     let mapLayer = []
-    for(let x = 0; x < m; x++) {
+    for(let x = 0; x <= m; x++) {
       /**
        * If it's left or right of the frame add texture
        * and go to a new iteration
        */
-      if(x === 0 || x === m-1) {
+      if(x === 0 || x === m) {
         mapLayer.push('█')
         continue;
       }
 
       const isPlayerMatch = isCoordinatesMatch(x, y, player)
       if(isPlayerMatch) {
-        mapLayer.push('P')
+        mapLayer.push('P ')
         continue;
       }
 
@@ -123,7 +123,7 @@ function createOrUpdateField() {
       const isCaseMatch = isTextureMatchAndTryCreateTexture(x, y, mapLayer, cases)
       if(isCaseMatch) continue;
 
-      mapLayer.push(' ')
+      mapLayer.push('  ')
     }
 
     fieldTemplate.push(mapLayer)
