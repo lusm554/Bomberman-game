@@ -42,9 +42,10 @@ let cases = {
   coordinates: [
     {x: 24, y: 6},
     {x: 25, y: 6},
-  ]
+  ],
 }
 
 let bombTexture = {
   texture: 'B ',
+  explosionCoordinates: [],
 }
