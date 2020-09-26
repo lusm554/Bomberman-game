@@ -1,7 +1,7 @@
 window.onload = pageLoad
 
 let player = {x: 1, y: 1}
-const Bombs = new Set()
+const Bombs = new Map()
 let isDelay = false
 
 function pageLoad() {
@@ -53,7 +53,9 @@ function keyPressHandler({keyCode}) {
 async function movePlayer(x = 0, y = 0) {
   player = {x: player.x + x, y: player.y + y}
 
+  // Re-render the field to display the new position of the player
   createOrUpdateField()
+
   artificialDelay()
 }
 
@@ -64,18 +66,56 @@ async function movePlayer(x = 0, y = 0) {
  * @param {number} y - player y
  */
 async function addBomb({x, y}) {
+  createOrUpdateField()
+
+  const bombCoordinate = {x, y}
   const bomb = {
-    numberOfTurns: 0, 
-    numberOfMovesAfterExplosion: 0,
     x, 
     y,
+    numberOfTurns: 0, 
+    numberOfMovesAfterExplosion: 0,
+    coordinates: createCoordinates(bombCoordinate),
   };
-  Bombs.add(bomb)
+  Bombs.set(bombCoordinate, bomb)
 
-  createOrUpdateField()
   artificialDelay()
 
   console.log('bomb added')
+}
+
+function createCoordinates({x, y}) {
+  const coordinates = []
+
+  for(let i = 1; i < 4; i++) {
+    let id = {x, y}
+    let top = {
+      id, 
+      x, 
+      y: y-i,
+    }
+    let bottom = {
+      id, 
+      x, 
+      y: y+i,
+    }
+    let left = {
+      id, 
+      y,
+      x: x-i, 
+    }
+    let right = {
+      id, 
+      y,
+      x: x+i,
+    }
+    coordinates.push(
+      top,
+      bottom,
+      left,
+      right,
+    )
+  }
+  return coordinates
 }
 
 // Creating an artificial delay
@@ -87,12 +127,6 @@ function artificialDelay() {
   }, 500);
 }
 
-/**
- * TODO: make constructor which 
- * build matrix with all texture (case = С, wall = █)
- * 
- * try to use class for creating bomb or wall or monster
- */
 function createOrUpdateField() {
   let fieldTemplate = []
 
@@ -122,26 +156,19 @@ function createOrUpdateField() {
       if(x === 0 || x === m) {
         mapLayer.push('█')
         continue;
-      }
+      } 
+
+      const isEx = isTextureMatchAndTryCreateTexture(x, y, mapLayer, bombTexture)
+      if(isEx) continue;
 
       const isPlayerMatch = isCoordinatesMatch(x, y, player)
       if(isPlayerMatch) {
         mapLayer.push('P ')
+
+        // Update counters
+        updateCountersAndAddTextures()
         continue;
       }
-
-
-      /**
-       * If bomb here, add bomb on the map and return bomb,
-       * otherwise keep checking for others textures
-       */
-      const {texture, explosionCoordinates} = bombTexture;
-      const isBombHere = IsBombHereAndItExplodes(x, y, mapLayer, {
-        bombObjects: Array.from(Bombs.values()),
-        texture,
-        explosionCoordinates,
-      })
-      if(isBombHere) continue;
 
       const isWallMatch = isTextureMatchAndTryCreateTexture(x, y, mapLayer, walls)
       if(isWallMatch) continue;
@@ -183,54 +210,46 @@ function createOrUpdateField() {
   document.getElementById('field').innerHTML = textField
 }
 
-/**
- * Add bomb coordinate to the Bombs 
- * On update field check: 
- *  1. Is bomb explodes <Done>
- *  2. Is bomb on the current cage <Done>
- * If bomb should explodes, rendering explodes 
- */
-function IsBombHereAndItExplodes(currentX, currentY, mapLayer, {bombObjects, texture, explosionCoordinates}) {
-  // If bombs have not been added yet
-  if(bombObjects.length === 0) return false;
+function updateCountersAndAddTextures() {  
+  const BombsEntries = Array.from(Bombs.entries())
+  if(BombsEntries.length < 1) return;
 
-  const bomb = bombObjects.find(({numberOfTurns, numberOfMovesAfterExplosion, ...bombCoordinates}) => {
-    // if the current coordinates and bomb coordinates do not match
-    if(!isCoordinatesMatch(currentX, currentY, bombCoordinates)) return false;
+  for(let [key, value] of BombsEntries) {
+    value.numberOfTurns += 1
+    Bombs.set(key, value)
+    isNeedAddExplosionTexture(value)
+  }
+}
 
-    mapLayer.push(texture)
-    return true
+function isNeedAddExplosionTexture({numberOfTurns, coordinates, numberOfMovesAfterExplosion, ...id}) {
+  if(numberOfTurns === 6) {
+    bombTexture.coordinates.push(...coordinates)
+  }
+
+  if(numberOfTurns > 6) {
+    updateNumberOfMovesAfterExplosion()
+  }
+
+  if(numberOfMovesAfterExplosion === 2) {
+    removeExplosionTextures(id, coordinates)
+  }
+}
+
+function removeExplosionTextures(id, coordinates) {
+  bombTexture.coordinates = coordinates.filter(({coordinateID}) => {
+    let a = JSON.stringify(coordinateID), b = JSON.stringify(id)
+    return a === b
   })
+}
 
-  /**
-   * I create a constant a to avoid confusion. If the current coordinate 
-   * does not match the bomb coordinate, 
-   * then the method find returns false, otherwise it returns the bomb object.
-   */
-  const isBombExist = !!bomb;
-  if(!isBombExist) return false;
+function updateNumberOfMovesAfterExplosion() {
+  const BombsEntries = Array.from(Bombs.entries())
+  if(BombsEntries.length < 1) return;
 
-  if(bomb.numberOfTurns === 4) {
-    console.log('current bomb coordinate:', currentX, currentY)
+  for(let [key, value] of BombsEntries) {
+    value.numberOfMovesAfterExplosion += 1
+    Bombs.set(key, value)
   }
-
-  /**
-   * 5 because rendering happens on the next turn, 
-   * so it turns out after 6 player turns
-   */
-  if(bomb.numberOfTurns === 5) {
-    Bombs.delete(bomb)
-    console.log(explosionCoordinates)
-    console.log('boom')
-    return true
-  }
-
-  // Updating the value in the bomb object
-  Bombs.delete(bomb)
-  bomb.numberOfTurns+=1
-  Bombs.add(bomb)
-
-  return true
 }
 
 /**
@@ -241,26 +260,4 @@ function IsBombHereAndItExplodes(currentX, currentY, mapLayer, {bombObjects, tex
  */
 function isCoordinatesMatch(currentX, currentY, {x: objectX, y: objectY}) {
   return (currentX === objectX) && (currentY === objectY)
-}
-
-function createCoordinates() {
-/** 
- * example (x: 17 y: 5)
- * On the top 
- * {x: 17, y: 4}
- * {x: 17, y: 3}
- * {x: 17, y: 2}
- * On the bottom 
- * {x: 17, y: 6}
- * {x: 17, y: 7}
- * {x: 17, y: 8}
- * On the left
- * {x: 16, y: 5}
- * {x: 15, y: 5}
- * {x: 14, y: 5}
- * On the right
- * {x: 18, y: 5}
- * {x: 19, y: 5}
- * {x: 20, y: 5}
- */
 }
