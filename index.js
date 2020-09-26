@@ -51,7 +51,16 @@ function keyPressHandler({keyCode}) {
 }
 
 async function movePlayer(x = 0, y = 0) {
-  player = {x: player.x + x, y: player.y + y}
+  let currentCagePlayer = {x: player.x + x, y: player.y + y}
+
+  const isPlayerOnTexture = textureIntersectionCheck([currentCagePlayer]).length < 1
+  if(isPlayerOnTexture) {
+    alert('don\'t touch field!1!!!1')
+    artificialDelay();
+    return;
+  }
+
+  player = currentCagePlayer
 
   // Re-render the field to display the new position of the player
   createOrUpdateField()
@@ -116,6 +125,10 @@ function createCoordinates({x, y}) {
       right,
     )
   }
+  return textureIntersectionCheck(coordinates)
+}
+
+function textureIntersectionCheck(coordinates) {
   return coordinates.filter(({x, y}) => {
     // m - width n - height
     if(x <= 0 || x === m) {
