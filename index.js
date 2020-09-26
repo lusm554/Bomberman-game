@@ -108,6 +108,7 @@ function createCoordinates({x, y}) {
       y,
       x: x+i,
     }
+
     coordinates.push(
       top,
       bottom,
@@ -115,7 +116,34 @@ function createCoordinates({x, y}) {
       right,
     )
   }
-  return coordinates
+  return coordinates.filter(({x, y}) => {
+    // m - width n - height
+    if(x <= 0 || x === m) {
+      return false
+    } else if (y <= 0 || y === n-1) {
+      return false
+    } 
+
+    let isSomeCoordinatesIntersectWalls = walls.coordinates.some(({x: Wx, y: Wy}) => {
+      if(Wx === x && Wy === y) {
+        return true
+      }
+      return false
+    })
+
+    let isSomeCoordinatesIntersectCases = cases.coordinates.some(({x: Cx, y: Cy}) => {
+      if(Cx === x && Cy === y) {
+        return true
+      }
+      return false
+    })
+
+    if(isSomeCoordinatesIntersectWalls || isSomeCoordinatesIntersectCases) {
+      return false
+    }
+ 
+    return true
+  })
 }
 
 // Creating an artificial delay
@@ -127,14 +155,14 @@ function artificialDelay() {
   }, 500);
 }
 
+// Height
+const n = 14
+
+// Width 
+const m = 35
+
 function createOrUpdateField() {
   let fieldTemplate = []
-
-  // Height
-  const n = 14
-
-  // Width 
-  const m = 35
 
   for(let y = 0; y < n; y++) {
     /**
