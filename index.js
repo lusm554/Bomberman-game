@@ -83,7 +83,7 @@ async function addBomb({x, y}) {
     y,
     numberOfTurns: 0, 
     numberOfMovesAfterExplosion: 0,
-    coordinates: createCoordinates(bombCoordinate),
+    coordinates: createCoordinatesExplosion(bombCoordinate),
   };
   Bombs.set(bombCoordinate, bomb)
 
@@ -92,7 +92,7 @@ async function addBomb({x, y}) {
   console.log('bomb added')
 }
 
-function createCoordinates({x, y}) {
+function createCoordinatesExplosion({x, y}) {
   const coordinates = []
   const id = {x, y}
 
@@ -216,6 +216,7 @@ function createOrUpdateField() {
       if(isPlayerMatch) {
         mapLayer.push('P ')
         
+        moveMonsters()
         updateCountersAndAddTextures()
         continue;
       }
@@ -228,6 +229,9 @@ function createOrUpdateField() {
 
       const isCaseMatch = isTextureMatchAndTryCreateTexture(x, y, mapLayer, cases)
       if(isCaseMatch) continue;
+
+      const isMonsterMatch = isTextureMatchAndTryCreateTexture(x, y, mapLayer, monsters)
+      if(isMonsterMatch) continue;
 
       mapLayer.push('  ')
     }
@@ -261,6 +265,39 @@ function createOrUpdateField() {
   })
 
   document.getElementById('field').innerHTML = textField
+}
+
+function moveMonsters() {
+  monsters.coordinates = monsters.coordinates.map(({x, y}) => {
+    return randomlyMoveMonster(x, y)
+  })
+}
+
+function randomlyMoveMonster(x, y) {
+  let newCoord = {x, y}
+  let whichVer = Math.trunc(Math.random() * (4 - 1) + 1);
+
+  switch (whichVer) {
+    case 1:
+      newCoord.y -= 1
+      break;
+    case 2: 
+      newCoord.y += 1
+      break;
+    case 3: 
+      newCoord.x -= 1
+    case 4: 
+      newCoord.x += 1
+    default:
+      break;
+  }
+
+  const isCoordinateValid = textureIntersectionCheck([newCoord]).length > 0
+  if(isCoordinateValid) {
+    return newCoord
+  } else {
+    return {x, y}
+  }
 }
 
 function updateCountersAndAddTextures() {  

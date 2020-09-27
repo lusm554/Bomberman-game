@@ -1,5 +1,10 @@
 let monsters = {
   texture: 'M ',
+  coordinates: [
+    {x: 7, y: 3},
+    {x: 20, y: 9},
+    {x: 22, y: 5},
+  ]
 }
 let walls = {
   texture: '██',
