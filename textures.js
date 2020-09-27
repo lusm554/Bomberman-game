@@ -40,8 +40,8 @@ let walls = {
 let cases = {
   texture: 'CC',
   coordinates: [
-    {x: 24, y: 6},
-    {x: 25, y: 6},
+    {x: 24, y: 6, id: {}},
+    {x: 25, y: 6, id: {}},
   ],
 }
 

@@ -211,18 +211,17 @@ function createOrUpdateField() {
         mapLayer.push('█')
         continue;
       } 
-
-      const isEx = isTextureMatchAndTryCreateTexture(x, y, mapLayer, bombTexture)
-      if(isEx) continue;
-
+      
       const isPlayerMatch = isCoordinatesMatch(x, y, player)
       if(isPlayerMatch) {
         mapLayer.push('P ')
-
-        // Update counters
+        
         updateCountersAndAddTextures()
         continue;
       }
+      
+      const isBombTextureMatch = isTextureMatchAndTryCreateTexture(x, y, mapLayer, bombTexture)
+      if(isBombTextureMatch) continue;
 
       const isWallMatch = isTextureMatchAndTryCreateTexture(x, y, mapLayer, walls)
       if(isWallMatch) continue;
@@ -285,6 +284,12 @@ function isNeedAddExplosionTexture({numberOfTurns, coordinates, numberOfMovesAft
   }
 
   if(numberOfTurns >= 6) {
+    const isPlayerOnExplosionField = isPlayerAlive()
+    if(isPlayerOnExplosionField) {
+      alert('You lose')
+      window.location.reload()
+    }
+
     updateNumberOfMovesAfterExplosion()
   }
 
@@ -294,16 +299,20 @@ function isNeedAddExplosionTexture({numberOfTurns, coordinates, numberOfMovesAft
 }
 
 function removeExplosionTextures(id, coordinates) {
-  bombTexture.coordinates = coordinates.filter(({id: coordinateID}) => {
-    let a = JSON.stringify(coordinateID), b = JSON.stringify(id)
-    return !(a === b)
+  bombTexture.coordinates = coordinates.filter(({id: {x, y}}) => {
+    return !isCoordinatesMatch(x, y, id)
   })
 
-  cases.coordinates = cases.coordinates.filter(({id: coordinateID}) => {
-    let a = JSON.stringify(coordinateID), b = JSON.stringify(id)
-    return !(a === b)
+  cases.coordinates = cases.coordinates.filter(( {id: {x, y} }) => {
+    return !isCoordinatesMatch(x, y, id)
   })
 }
+
+function isPlayerAlive() {
+  return bombTexture.coordinates.some(({x, y}) => {
+    return isCoordinatesMatch(x, y, player)
+  })
+} 
 
 function updateNumberOfMovesAfterExplosion() {
   const BombsEntries = Array.from(Bombs.entries())
