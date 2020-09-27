@@ -1,6 +1,6 @@
 window.onload = pageLoad
 
-let player = {x: 1, y: 1}
+let player = {x: 24, y: 5}
 const Bombs = new Map()
 let isDelay = false
 
@@ -125,10 +125,10 @@ function createCoordinates({x, y}) {
       right,
     )
   }
-  return textureIntersectionCheck(coordinates)
+  return textureIntersectionCheck(coordinates, id, true)
 }
 
-function textureIntersectionCheck(coordinates) {
+function textureIntersectionCheck(coordinates, id=null, isBomb=false) {
   return coordinates.filter(({x, y}) => {
     // m - width n - height
     if(x <= 0 || x === m) {
@@ -144,12 +144,25 @@ function textureIntersectionCheck(coordinates) {
       return false
     })
 
-    let isSomeCoordinatesIntersectCases = cases.coordinates.some(({x: Cx, y: Cy}) => {
-      if(Cx === x && Cy === y) {
-        return true
-      }
-      return false
-    })
+    let isSomeCoordinatesIntersectCases = false
+
+    if(isBomb) {
+      cases.coordinates = cases.coordinates.map((coordinate) => {
+        let {x: Cx, y: Cy} = coordinate
+        if(Cx === x && Cy === y) {
+          coordinate.id = id
+          isSomeCoordinatesIntersectCases = true
+        }
+        return coordinate
+      })
+    } else {
+      isSomeCoordinatesIntersectCases = cases.coordinates.some(({x: Cx, y: Cy}) => {
+        if(Cx === x && Cy === y) {
+          return true
+        }
+        return false
+      })
+    }
 
     if(isSomeCoordinatesIntersectWalls || isSomeCoordinatesIntersectCases) {
       return false
@@ -280,9 +293,14 @@ function isNeedAddExplosionTexture({numberOfTurns, coordinates, numberOfMovesAft
 }
 
 function removeExplosionTextures(id, coordinates) {
-  bombTexture.coordinates = coordinates.filter(({coordinateID}) => {
+  bombTexture.coordinates = coordinates.filter(({id: coordinateID}) => {
     let a = JSON.stringify(coordinateID), b = JSON.stringify(id)
-    return a === b
+    return !(a === b)
+  })
+
+  cases.coordinates = cases.coordinates.filter(({id: coordinateID}) => {
+    let a = JSON.stringify(coordinateID), b = JSON.stringify(id)
+    return !(a === b)
   })
 }
 
