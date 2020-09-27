@@ -1,6 +1,6 @@
 window.onload = pageLoad
 
-let player = {x: 24, y: 5}
+let player = {x: 1, y: 1}
 const Bombs = new Map()
 let isDelay = false
 
@@ -269,8 +269,9 @@ function updateCountersAndAddTextures() {
   if(BombsEntries.length < 1) return;
 
   for(let [key, value] of BombsEntries) {
-    if(value.numberOfMovesAfterExplosion >= 3) {
+    if(value.numberOfMovesAfterExplosion > 3 && value.numberOfTurns >= 6) {
       Bombs.delete(key)
+      continue;
     }
     value.numberOfTurns += 1
     Bombs.set(key, value)
@@ -283,11 +284,11 @@ function isNeedAddExplosionTexture({numberOfTurns, coordinates, numberOfMovesAft
     bombTexture.coordinates.push(...coordinates)
   }
 
-  if(numberOfTurns > 6) {
+  if(numberOfTurns >= 6) {
     updateNumberOfMovesAfterExplosion()
   }
 
-  if(numberOfMovesAfterExplosion >= 2 && numberOfTurns > 6) {
+  if(numberOfMovesAfterExplosion >= 3 && numberOfTurns > 6) {
     removeExplosionTextures(id, coordinates)
   }
 }
