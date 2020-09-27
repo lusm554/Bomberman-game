@@ -1,4 +1,6 @@
-let monsters = []
+let monsters = {
+  texture: 'M ',
+}
 let walls = {
   texture: '██',
   coordinates: [
@@ -46,6 +48,6 @@ let cases = {
 }
 
 let bombTexture = {
-  texture: 'E ',
+  texture: 'F ',
   coordinates: [],
 }
