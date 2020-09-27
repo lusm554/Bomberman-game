@@ -147,6 +147,10 @@ function textureIntersectionCheck(coordinates, id=null, isBomb=false) {
     let isSomeCoordinatesIntersectCases = false
 
     if(isBomb) {
+      /**
+      * Add the bomb id so that after the explosion the 
+      * boxes disappear along with the explosion textures
+      */
       cases.coordinates = cases.coordinates.map((coordinate) => {
         let {x: Cx, y: Cy} = coordinate
         if(Cx === x && Cy === y) {
@@ -190,6 +194,7 @@ const m = 35
 function createOrUpdateField() {
   let fieldTemplate = []
 
+  // Create a matrix n on m with all textures
   for(let y = 0; y < n; y++) {
     /**
      * If this is the top or bottom of the frame, add texture
@@ -200,7 +205,7 @@ function createOrUpdateField() {
       continue;
     }
 
-    // Create a map layer
+    // Create a map layer by iterating over all texture coordinates
     let mapLayer = []
     for(let x = 0; x <= m; x++) {
       /**
@@ -273,6 +278,7 @@ function moveMonsters() {
   })
 }
 
+// // Move monsters to random coordinates
 function randomlyMoveMonster(x, y) {
   let newCoord = {x, y}
   let whichVer = Math.trunc(Math.random() * (4 - 1) + 1);
@@ -293,6 +299,8 @@ function randomlyMoveMonster(x, y) {
   }
 
   const isCoordinateValid = textureIntersectionCheck([newCoord]).length > 0
+
+  // If the random coordinates do not fit, leave the same
   if(isCoordinateValid) {
     return newCoord
   } else {
@@ -300,6 +308,7 @@ function randomlyMoveMonster(x, y) {
   }
 }
 
+// Updating the bomb counters
 function updateCountersAndAddTextures() {  
   const BombsEntries = Array.from(Bombs.entries())
   if(BombsEntries.length < 1) return;
@@ -315,6 +324,7 @@ function updateCountersAndAddTextures() {
   }
 }
 
+// Checking counters for adding coordinates
 function isNeedAddExplosionTexture({numberOfTurns, coordinates, numberOfMovesAfterExplosion, ...id}) {
   if(numberOfTurns === 6) {
     bombTexture.coordinates.push(...coordinates)
@@ -335,6 +345,7 @@ function isNeedAddExplosionTexture({numberOfTurns, coordinates, numberOfMovesAft
   }
 }
 
+// Remove textures after explosion
 function removeExplosionTextures(id, coordinates) {
   bombTexture.coordinates = coordinates.filter(({id: {x, y}}) => {
     return !isCoordinatesMatch(x, y, id)
@@ -345,6 +356,7 @@ function removeExplosionTextures(id, coordinates) {
   })
 }
 
+// Player explosion check
 function isPlayerAlive() {
   return bombTexture.coordinates.some(({x, y}) => {
     return isCoordinatesMatch(x, y, player)
