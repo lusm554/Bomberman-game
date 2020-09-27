@@ -94,9 +94,9 @@ async function addBomb({x, y}) {
 
 function createCoordinates({x, y}) {
   const coordinates = []
+  const id = {x, y}
 
   for(let i = 1; i < 4; i++) {
-    let id = {x, y}
     let top = {
       id, 
       x, 
@@ -154,7 +154,7 @@ function textureIntersectionCheck(coordinates) {
     if(isSomeCoordinatesIntersectWalls || isSomeCoordinatesIntersectCases) {
       return false
     }
- 
+
     return true
   })
 }
@@ -256,6 +256,9 @@ function updateCountersAndAddTextures() {
   if(BombsEntries.length < 1) return;
 
   for(let [key, value] of BombsEntries) {
+    if(value.numberOfMovesAfterExplosion >= 3) {
+      Bombs.delete(key)
+    }
     value.numberOfTurns += 1
     Bombs.set(key, value)
     isNeedAddExplosionTexture(value)
@@ -271,7 +274,7 @@ function isNeedAddExplosionTexture({numberOfTurns, coordinates, numberOfMovesAft
     updateNumberOfMovesAfterExplosion()
   }
 
-  if(numberOfMovesAfterExplosion === 2) {
+  if(numberOfMovesAfterExplosion >= 2 && numberOfTurns > 6) {
     removeExplosionTextures(id, coordinates)
   }
 }
