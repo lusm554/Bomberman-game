@@ -2,7 +2,7 @@ window.onload = pageLoad
 
 let player = {x: 1, y: 1}
 const Bombs = new Map()
-let isDelay = false
+let lastTurnTime = Date.now()
 
 function pageLoad() {
   // Create a field and arrange objects.
@@ -17,7 +17,8 @@ function keyPressHandler({keyCode}) {
    * I use return here instead of event.preventDefault() 
    * because it's so convenient to receive arguments
    */
-  if(isDelay) return;
+  if(isDelay()) return;
+  lastTurnTime = Date.now()
   
   switch (keyCode) {
     // W
@@ -50,13 +51,12 @@ function keyPressHandler({keyCode}) {
   }
 }
 
-async function movePlayer(x = 0, y = 0) {
+function movePlayer(x = 0, y = 0) {
   let currentCagePlayer = {x: player.x + x, y: player.y + y}
 
   const isPlayerOnTexture = textureIntersectionCheck([currentCagePlayer]).length < 1
   if(isPlayerOnTexture) {
     alert('don\'t touch field!1!!!1')
-    artificialDelay();
     return;
   }
 
@@ -64,8 +64,6 @@ async function movePlayer(x = 0, y = 0) {
 
   // Re-render the field to display the new position of the player
   createOrUpdateField()
-
-  artificialDelay()
 }
 
 /**
@@ -74,7 +72,7 @@ async function movePlayer(x = 0, y = 0) {
  * @param {number} x - player x
  * @param {number} y - player y
  */
-async function addBomb({x, y}) {
+function addBomb({x, y}) {
   createOrUpdateField()
 
   const bombCoordinate = {x, y}
@@ -86,8 +84,6 @@ async function addBomb({x, y}) {
     coordinates: createCoordinatesExplosion(bombCoordinate),
   };
   Bombs.set(bombCoordinate, bomb)
-
-  artificialDelay()
 
   console.log('bomb added')
 }
@@ -176,13 +172,13 @@ function textureIntersectionCheck(coordinates, id=null, isBomb=false) {
   })
 }
 
-// Creating an artificial delay
-function artificialDelay() {
-  isDelay = true
-  const delay = setTimeout(() => {
-    isDelay = false;
-    clearTimeout(delay)
-  }, 500);
+// Check how much time has passed since the player's last move
+function isDelay() {
+  let time = Date.now() - lastTurnTime
+  if(time < 500) {
+    return true
+  }
+  return false
 }
 
 // Height
